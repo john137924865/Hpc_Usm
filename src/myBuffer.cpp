@@ -7,47 +7,36 @@ using namespace sycl;
 
 template <typename T>
 class myBuffer {
-private:
-    T* device_data;
-    T* host_data;
-    size_t size;
 
-public:
+    private:
+        T* device_data;
+        T* host_data;
+        size_t size;
+        queue* q;
 
-    // Costruttore per dati non inizializzati, alloco senza inizializzazione;
-    myBuffer(queue& q, size_t n) : size(n) {
-        device_data = static_cast<T*>(malloc_device(sizeof(T) * size, q));
-        host_data = new T[size];
-    }
+    public:
 
-    auto copy_host_to_device(queue& q) {
-        return q.memcpy(device_data, host_data, sizeof(T) * size);
-    }
+        // Costruttore senza inizializzazione;
+        myBuffer(queue& q, size_t n) : size(n) {
+            this->device_data = static_cast<T*>(malloc_device(sizeof(T) * size, q));
+            this->host_data = new T[size];
+            this->q = &q;
+        }
 
-    auto copy_device_to_host(queue& q) {
-        return q.memcpy(host_data, device_data, sizeof(T) * size);
-    }
+        void copy_host_to_device() {
+            (*this->q).memcpy(device_data, host_data, sizeof(T) * size).wait();
+        }
 
-    auto copy_host_to_device(queue& q, event& e) {
-        return q.submit([&](handler& h) {
-            h.depends_on(e);
-            q.memcpy(device_data, host_data, sizeof(T) * size);
-        });
-    }
+        void copy_device_to_host() {
+            (*this->q).memcpy(host_data, device_data, sizeof(T) * size);
+        }
 
-    auto copy_device_to_host(queue& q, event& e) {
-        return q.submit([&](handler& h) {
-            h.depends_on(e);
-            h.memcpy(host_data, device_data, sizeof(T) * size);
-        });
-    }
+        T* get_host_data() {
+            return host_data;
+        }
 
-    T* get_host_data() {
-        return host_data;
-    }
-
-    T* get_device_data() {
-        return device_data;
-    }
+        T* get_device_data() {
+            return device_data;
+        }
 
 };

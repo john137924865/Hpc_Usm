@@ -8,15 +8,16 @@ using namespace sycl;
 
 template <typename T>
 class myAccessor {
-private:
-    T* device_data;
 
-public:
+    private:
+        T* device_data;
 
-    myAccessor(myBuffer<T>& buf) : device_data(buf.get_device_data()) {}
+    public:
 
-    T& operator[](size_t index) const {
-        return device_data[index];
-    }
+        myAccessor(myBuffer<T>& buf) : device_data(buf.get_device_data()) {}
+
+        T& operator[](size_t index) const {
+            return device_data[index];
+        }
 
 };

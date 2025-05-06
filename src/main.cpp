@@ -11,30 +11,23 @@ int main() {
     queue q;
 
     constexpr size_t N = 10;
-    
-    // buffer non inizializzato
+
     myBuffer<int> buf(q, N);
 
-    // Inizializzazione con host_accessor
     myHostAccessor host_acc(buf);
     for (size_t i = 0; i < N; ++i) {
         host_acc[i] = i;
     }
+    buf.copy_host_to_device();
 
-    // Copia i dati da host a device internamente al buffer
-    auto e1 = buf.copy_host_to_device(q);
-
-    // aspetto che termini la copia
-    auto e2 = q.submit([&](handler& h) {
-        h.depends_on(e1);
+    q.submit([&](handler& h) {
         myAccessor acc(buf);
         h.parallel_for(range<1>(N), [=](id<1> idx) {
             acc[idx] += 1;
         });
-    });
+    }).wait();
 
-    // Copia i dati da device a host internamente al buffer al termine del kernel, quindi aspetto
-    buf.copy_device_to_host(q, e2).wait();
+    buf.copy_device_to_host();
 
     for (size_t i = 0; i < N; ++i) {
         std::cout << host_acc[i] << " ";
