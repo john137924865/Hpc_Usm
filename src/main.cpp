@@ -18,7 +18,7 @@ int main() {
     // Inizializzazione con host_accessor
     myHostAccessor host_acc(buf);
     for (size_t i = 0; i < N; ++i) {
-        host_acc[i] = i;
+        host_acc[i] = 0;
     }
 
     // Copia i dati da host a device internamente al buffer
@@ -27,9 +27,9 @@ int main() {
     // aspetto che termini la copia
     auto e2 = q.submit([&](handler& h) {
         h.depends_on(e1);
-        myAccessor acc(buf);
+        myAccessor acc(buf, h);
         h.parallel_for(range<1>(N), [=](id<1> idx) {
-            acc[idx] += 1;
+            acc[idx] = idx;
         });
     });
 
