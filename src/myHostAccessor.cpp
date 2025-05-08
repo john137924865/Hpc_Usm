@@ -10,22 +10,13 @@ template <typename T>
 class myHostAccessor {
 
     private:
-        T* device_data;
         T* host_data;
-        size_t size;
-        queue* q;
         access::mode mode;
 
     public:
 
         myHostAccessor(myBuffer<T>& buf, access::mode mode = access::mode::read_write) :
-            device_data(buf.get_device_data()), host_data(buf.get_host_data()), size(buf.get_size()), q(buf.get_queue()), mode(mode) {}
-
-        ~myHostAccessor() {
-            if (mode != access::mode::read) {
-                (*q).memcpy(device_data, host_data, sizeof(T) * size).wait();
-            }
-        }
+            host_data(buf.get_host_data()), mode(mode) {}
 
         T& operator[](size_t index) {
             return host_data[index];

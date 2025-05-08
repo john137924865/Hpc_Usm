@@ -16,11 +16,18 @@ class myBuffer {
 
     public:
 
-        // Costruttore senza inizializzazione;
         myBuffer(queue& q, size_t n) : size(n) {
             this->device_data = static_cast<T*>(malloc_device(sizeof(T) * size, q));
             this->host_data = new T[size];
             this->q = &q;
+        }
+
+        void copy_host_to_device() {
+            (*q).memcpy(device_data, host_data, sizeof(T) * size).wait();
+        }
+
+        void copy_device_to_host() {
+            (*q).memcpy(host_data, device_data, sizeof(T) * size).wait();
         }
 
         T* get_device_data() {
@@ -29,14 +36,6 @@ class myBuffer {
         
         T* get_host_data() {
             return host_data;
-        }
-
-        size_t get_size() {
-            return size;
-        }
-
-        queue* get_queue() {
-            return q;
         }
 
 };
