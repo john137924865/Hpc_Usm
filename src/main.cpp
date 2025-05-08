@@ -1,6 +1,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 #include "myBuffer.cpp"
+#include "deviceBuffer.cpp"
 #include "myHostAccessor.cpp"
 #include "myAccessor.cpp"
 
@@ -14,25 +15,31 @@ int main() {
 
     myBuffer<int> buf(q, N);
 
-    myHostAccessor host_acc(buf);
-    for (size_t i = 0; i < N; ++i) {
-        host_acc[i] = i;
+    {
+        myHostAccessor host_acc(buf);
+        for (size_t i = 0; i < N; ++i) {
+            host_acc[i] = i;
+        }
     }
-    buf.copy_host_to_device();
+
+    deviceBuffer dev_buf(buf);
 
     q.submit([&](handler& h) {
-        myAccessor acc(buf);
+        myAccessor acc(dev_buf);
         h.parallel_for(range<1>(N), [=](id<1> idx) {
             acc[idx] += 1;
         });
     }).wait();
 
-    buf.copy_device_to_host();
+    dev_buf.sync();
 
-    for (size_t i = 0; i < N; ++i) {
-        std::cout << host_acc[i] << " ";
+    {
+        myHostAccessor host_acc(buf, access::mode::read);
+        for (size_t i = 0; i < N; ++i) {
+            std::cout << host_acc[i] << " ";
+        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 
     return 0;
 }

@@ -2,7 +2,7 @@
 
 #include <sycl/sycl.hpp>
 #include <iostream>
-#include "myBuffer.cpp"
+#include "deviceBuffer.cpp"
 
 using namespace sycl;
 
@@ -14,7 +14,7 @@ class myAccessor {
 
     public:
 
-        myAccessor(myBuffer<T>& buf) : device_data(buf.get_device_data()) {}
+        myAccessor(deviceBuffer<T>& dev_buf) : device_data(dev_buf.get_device_data()) {}
 
         T& operator[](size_t index) const {
             return device_data[index];

@@ -23,20 +23,20 @@ class myBuffer {
             this->q = &q;
         }
 
-        void copy_host_to_device() {
-            (*this->q).memcpy(device_data, host_data, sizeof(T) * size).wait();
+        T* get_device_data() {
+            return device_data;
         }
-
-        void copy_device_to_host() {
-            (*this->q).memcpy(host_data, device_data, sizeof(T) * size);
-        }
-
+        
         T* get_host_data() {
             return host_data;
         }
 
-        T* get_device_data() {
-            return device_data;
+        size_t get_size() {
+            return size;
+        }
+
+        queue* get_queue() {
+            return q;
         }
 
 };

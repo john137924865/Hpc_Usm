@@ -7,7 +7,7 @@
 using namespace sycl;
 
 template <typename T>
-class myHostAccessor {
+class deviceBuffer {
 
     private:
         T* device_data;
@@ -18,17 +18,17 @@ class myHostAccessor {
 
     public:
 
-        myHostAccessor(myBuffer<T>& buf, access::mode mode = access::mode::read_write) :
+        deviceBuffer(myBuffer<T>& buf, access::mode mode = access::mode::read_write) :
             device_data(buf.get_device_data()), host_data(buf.get_host_data()), size(buf.get_size()), q(buf.get_queue()), mode(mode) {}
 
-        ~myHostAccessor() {
+        void sync() {
             if (mode != access::mode::read) {
-                (*q).memcpy(device_data, host_data, sizeof(T) * size).wait();
+                (*q).memcpy(host_data, device_data, sizeof(T) * size).wait();
             }
         }
 
-        T& operator[](size_t index) {
-            return host_data[index];
+        T* get_device_data() {
+            return device_data;
         }
 
 };
