@@ -19,20 +19,35 @@ int main() {
         for (size_t i = 0; i < N; ++i) {
             host_acc[i] = i;
         }
+        buf.copy_host_to_device();
     }
 
-    buf.copy_host_to_device();
+    event e1 = q.submit([&](handler& h) {
+        myAccessor acc(buf, h, access::mode::read);
+        h.parallel_for(range<1>(N), [=](id<1> idx) {
+            acc[idx];
+        });
+    });
+    buf.add_event(e1);
 
-    q.submit([&](handler& h) {
-        myAccessor acc(buf);
+    event e2 = q.submit([&](handler& h) {
+        myAccessor acc(buf, h, access::mode::read);
+        h.parallel_for(range<1>(N), [=](id<1> idx) {
+            acc[idx];
+        });
+    });
+    buf.add_event(e2);
+
+    event e3 = q.submit([&](handler& h) {
+        myAccessor acc(buf, h);
         h.parallel_for(range<1>(N), [=](id<1> idx) {
             acc[idx] += 1;
         });
-    }).wait();
-
-    buf.copy_device_to_host();
+    });
+    buf.add_event(e3);
 
     {
+        buf.copy_device_to_host();
         myHostAccessor host_acc(buf, access::mode::read);
         for (size_t i = 0; i < N; ++i) {
             std::cout << host_acc[i] << " ";

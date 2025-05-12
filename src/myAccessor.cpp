@@ -15,8 +15,10 @@ class myAccessor {
 
     public:
 
-        myAccessor(myBuffer<T>& buf, access::mode mode = access::mode::read_write) :
-            device_data(buf.get_device_data()), mode(mode) {}
+        myAccessor(myBuffer<T>& buf, handler& h, access::mode mode = access::mode::read_write) : 
+                device_data(buf.get_device_data()), mode(mode) {
+            buf.check_mode(mode, h);
+        }
 
         T& operator[](size_t index) const {
             return device_data[index];
