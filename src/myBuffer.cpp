@@ -10,19 +10,22 @@ template <typename T>
 class myBuffer {
 
     private:
+        std::string name;
         T* device_data;
         T* host_data;
         size_t size;
         queue* q;
         std::vector<event> events;
+        std::vector<std::string> names;
         bool write = false;
 
     public:
 
-        myBuffer(queue& q, size_t n) : size(n) {
+        myBuffer(queue& q, size_t n, std::string name) : size(n) {
             this->device_data = static_cast<T*>(malloc_device(sizeof(T) * size, q));
             this->host_data = new T[size];
             this->q = &q;
+            this->name = name;
         }
 
         void copy_host_to_device() {
@@ -41,25 +44,31 @@ class myBuffer {
             return host_data;
         }
 
-        void add_event(event e) {
+        void add_event(event e, std::string name) {
             if (write) {
                 e.wait();
+                std::cout << this->name << " wait " << name << std::endl;;
                 write = false;
             } else {
                 events.push_back(e);
+                names.push_back(name);
+                std::cout << this->name << " push_back " << name << std::endl;
             }
-            std::cout << "add_event; size : " << events.size() << " write: " << std::boolalpha << write << std::endl << std::endl;
+            //std::cout << "add_event; size : " << events.size() << ", write: " << std::boolalpha << write << std::endl;
         }
 
         void check_mode(access::mode mode, handler& h) {
             if (mode != access::mode::read) {
-                for (event& elem : events) {
-                    h.depends_on(elem);
+                std::cout << name << " depends_on " << events.size() << " ";
+                for (int i = 0; i < events.size(); i++) {
+                    h.depends_on(events[i]);
+                    std::cout << names[i] << " ";
                 }
+                std::cout << ";" << std::endl;
                 events.clear();
                 write = true;
             }
-            std::cout << "check_mode; size : " << events.size() << " write: " << std::boolalpha << write << std::endl;
+            //std::cout << "check_mode; size : " << events.size() << ", write: " << std::boolalpha << write << std::endl;
         }
 
         /*~myBuffer() {
