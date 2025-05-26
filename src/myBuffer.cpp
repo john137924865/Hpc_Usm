@@ -11,10 +11,10 @@ class myBuffer {
 
     private:
         std::string name;
-        T* device_data;
-        T* host_data;
+        T* device_data = nullptr;
+        T* host_data = nullptr;
         size_t size;
-        queue* q;
+        queue* q = nullptr;
         std::vector<event> events;
         std::vector<std::string> names;
         bool write = false;
@@ -26,6 +26,15 @@ class myBuffer {
             this->host_data = new T[size];
             this->q = &q;
             this->name = name;
+        }
+
+        ~myBuffer() {
+            if (device_data) {
+                sycl::free(device_data, *q);
+            }
+            if (host_data) {
+                delete[] host_data;
+            }
         }
 
         void copy_host_to_device() {
