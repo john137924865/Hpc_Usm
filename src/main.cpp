@@ -61,6 +61,8 @@ void test1() {
     b.add_event(a_b_c, "a_b_c");
     c.add_event(a_b_c, "a_b_c");
 
+    std::cout << std::endl;
+
     event c_d_e = q.submit([&](handler& h) {
         myAccessor acc_c(c, h, access::mode::read);
         myAccessor acc_d(d, h, access::mode::read);
@@ -72,6 +74,8 @@ void test1() {
     c.add_event(c_d_e, "c_d_e");
     d.add_event(c_d_e, "c_d_e");
     e.add_event(c_d_e, "c_d_e");
+
+    std::cout << std::endl;
 
     event c_f_g = q.submit([&](handler& h) {
         myAccessor acc_c(c, h, access::mode::read);
@@ -85,6 +89,8 @@ void test1() {
     f.add_event(c_f_g, "c_f_g");
     g.add_event(c_f_g, "c_f_g");
 
+    std::cout << std::endl;
+
     event e_g_h = q.submit([&](handler& hdl) {
         myAccessor acc_e(e, hdl, access::mode::read);
         myAccessor acc_g(g, hdl, access::mode::read);
@@ -96,6 +102,10 @@ void test1() {
     e.add_event(e_g_h, "e_g_h");
     g.add_event(e_g_h, "e_g_h");
     h.add_event(e_g_h, "e_g_h");
+
+    std::cout << std::endl;
+
+    q.wait();
 
     {
         h.copy_device_to_host();
