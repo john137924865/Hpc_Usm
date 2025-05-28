@@ -49,6 +49,8 @@ void test1() {
         f.copy_host_to_device();
     }
 
+    std::cout << std::endl << " - a_b_c" << std::endl;
+
     event a_b_c = q.submit([&](handler& h) {
         myAccessor acc_a(a, h, access::mode::read);
         myAccessor acc_b(b, h, access::mode::read);
@@ -61,7 +63,7 @@ void test1() {
     b.add_event(a_b_c, "a_b_c");
     c.add_event(a_b_c, "a_b_c");
 
-    std::cout << std::endl;
+    std::cout << std::endl << " - c_d_e" << std::endl;
 
     event c_d_e = q.submit([&](handler& h) {
         myAccessor acc_c(c, h, access::mode::read);
@@ -75,7 +77,7 @@ void test1() {
     d.add_event(c_d_e, "c_d_e");
     e.add_event(c_d_e, "c_d_e");
 
-    std::cout << std::endl;
+    std::cout << std::endl << " - c_f_g" << std::endl;
 
     event c_f_g = q.submit([&](handler& h) {
         myAccessor acc_c(c, h, access::mode::read);
@@ -89,7 +91,7 @@ void test1() {
     f.add_event(c_f_g, "c_f_g");
     g.add_event(c_f_g, "c_f_g");
 
-    std::cout << std::endl;
+    std::cout << std::endl << " - e_g_h" << std::endl;
 
     event e_g_h = q.submit([&](handler& hdl) {
         myAccessor acc_e(e, hdl, access::mode::read);
@@ -120,7 +122,7 @@ void test1() {
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "test1: Durata: " << duration.count() << " millisecondi" << std::endl;
+    std::cout << "test1: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
 
 }
 
@@ -200,6 +202,6 @@ void test2() {
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "test2: Durata: " << duration.count() << " millisecondi" << std::endl;
+    std::cout << "test2: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
 
 }

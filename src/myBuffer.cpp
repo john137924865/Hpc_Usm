@@ -32,12 +32,8 @@ class myBuffer {
         }
 
         ~myBuffer() {
-            if (device_data) {
-                sycl::free(device_data, *q);
-            }
-            if (host_data) {
-                delete[] host_data;
-            }
+            sycl::free(device_data, *q);
+            delete[] host_data;
         }
 
         void copy_host_to_device() {
@@ -91,9 +87,5 @@ class myBuffer {
             }
             //std::cout << "add_event; size : " << events.size() << ", write: " << std::boolalpha << write << std::endl;
         }
-
-        /*~myBuffer() {
-            std::cout << events.size() << std::endl << modes.size() << std::endl;
-        }*/
 
 };
