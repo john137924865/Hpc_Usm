@@ -4,8 +4,6 @@
 #include <vector>
 #include <iostream>
 
-using namespace sycl;
-
 template <typename T>
 class myBuffer {
 
@@ -14,17 +12,17 @@ class myBuffer {
         T* device_data = nullptr;
         T* host_data = nullptr;
         size_t size;
-        queue* q = nullptr;
-        std::vector<event> events;
+        sycl::queue* q = nullptr;
+        std::vector<sycl::event> events;
         std::vector<std::string> names;
-        std::vector<event> last_write;
+        std::vector<sycl::event> last_write;
         std::vector<std::string> last_write_name;
         bool current_write = false;
         bool ever_write = false;
 
     public:
 
-        myBuffer(queue& q, size_t n, std::string name) : size(n) {
+        myBuffer(sycl::queue& q, size_t n, std::string name) : size(n) {
             this->device_data = static_cast<T*>(malloc_device(sizeof(T) * size, q));
             this->host_data = new T[size];
             this->q = &q;
@@ -52,8 +50,8 @@ class myBuffer {
             return host_data;
         }
 
-        void check_mode(access::mode mode, handler& h) {
-            if (mode != access::mode::read) {
+        void check_mode(sycl::access::mode mode, sycl::handler& h) {
+            if (mode != sycl::access::mode::read) {
                 std::cout << name << " depends_on " << events.size() << " ";
                 for (int i = 0; i < events.size(); i++) {
                     h.depends_on(events[i]);
@@ -71,7 +69,7 @@ class myBuffer {
             //std::cout << "check_mode; size : " << events.size() << ", write: " << std::boolalpha << write << std::endl;
         }
 
-        void add_event(event e, std::string name) {
+        void add_event(sycl::event e, std::string name) {
             if (current_write) {
                 ever_write = true;
                 last_write.clear();

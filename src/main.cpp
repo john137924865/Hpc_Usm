@@ -5,8 +5,6 @@
 #include "myHostAccessor.cpp"
 #include "myAccessor.cpp"
 
-using namespace sycl;
-
 void test1();
 void test2();
 
@@ -21,7 +19,7 @@ void test1() {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    queue q;
+    sycl::queue q;
 
     myBuffer<int> a(q, N, "a");
     myBuffer<int> b(q, N, "b");
@@ -33,10 +31,10 @@ void test1() {
     myBuffer<int> h(q, N, "h");
 
     {
-        myHostAccessor host_acc_a(a, access::mode::write);
-        myHostAccessor host_acc_b(b, access::mode::write);
-        myHostAccessor host_acc_d(d, access::mode::write);
-        myHostAccessor host_acc_f(f, access::mode::write);
+        myHostAccessor host_acc_a(a, sycl::access::mode::write);
+        myHostAccessor host_acc_b(b, sycl::access::mode::write);
+        myHostAccessor host_acc_d(d, sycl::access::mode::write);
+        myHostAccessor host_acc_f(f, sycl::access::mode::write);
         for (size_t i = 0; i < N; ++i) {
             host_acc_a[i] = i;
             host_acc_b[i] = i;
@@ -51,11 +49,11 @@ void test1() {
 
     std::cout << std::endl << " - a_b_c" << std::endl;
 
-    event a_b_c = q.submit([&](handler& h) {
-        myAccessor acc_a(a, h, access::mode::read);
-        myAccessor acc_b(b, h, access::mode::read);
-        myAccessor acc_c(c, h, access::mode::write);
-        h.parallel_for(range<1>(N), [=](id<1> idx) {
+    sycl::event a_b_c = q.submit([&](sycl::handler& h) {
+        myAccessor acc_a(a, h, sycl::access::mode::read);
+        myAccessor acc_b(b, h, sycl::access::mode::read);
+        myAccessor acc_c(c, h, sycl::access::mode::write);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_c[idx] = acc_a[idx] + acc_b[idx];
         });
     });
@@ -65,11 +63,11 @@ void test1() {
 
     std::cout << std::endl << " - c_d_e" << std::endl;
 
-    event c_d_e = q.submit([&](handler& h) {
-        myAccessor acc_c(c, h, access::mode::read);
-        myAccessor acc_d(d, h, access::mode::read);
-        myAccessor acc_e(e, h, access::mode::write);
-        h.parallel_for(range<1>(N), [=](id<1> idx) {
+    sycl::event c_d_e = q.submit([&](sycl::handler& h) {
+        myAccessor acc_c(c, h, sycl::access::mode::read);
+        myAccessor acc_d(d, h, sycl::access::mode::read);
+        myAccessor acc_e(e, h, sycl::access::mode::write);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_e[idx] = acc_c[idx] + acc_d[idx];
         });
     });
@@ -79,11 +77,11 @@ void test1() {
 
     std::cout << std::endl << " - c_f_g" << std::endl;
 
-    event c_f_g = q.submit([&](handler& h) {
-        myAccessor acc_c(c, h, access::mode::read);
-        myAccessor acc_f(f, h, access::mode::read);
-        myAccessor acc_g(g, h, access::mode::write);
-        h.parallel_for(range<1>(N), [=](id<1> idx) {
+    sycl::event c_f_g = q.submit([&](sycl::handler& h) {
+        myAccessor acc_c(c, h, sycl::access::mode::read);
+        myAccessor acc_f(f, h, sycl::access::mode::read);
+        myAccessor acc_g(g, h, sycl::access::mode::write);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_g[idx] = acc_c[idx] + acc_f[idx];
         });
     });
@@ -93,11 +91,11 @@ void test1() {
 
     std::cout << std::endl << " - e_g_h" << std::endl;
 
-    event e_g_h = q.submit([&](handler& hdl) {
-        myAccessor acc_e(e, hdl, access::mode::read);
-        myAccessor acc_g(g, hdl, access::mode::read);
-        myAccessor acc_h(h, hdl, access::mode::write);
-        hdl.parallel_for(range<1>(N), [=](id<1> idx) {
+    sycl::event e_g_h = q.submit([&](sycl::handler& hdl) {
+        myAccessor acc_e(e, hdl, sycl::access::mode::read);
+        myAccessor acc_g(g, hdl, sycl::access::mode::read);
+        myAccessor acc_h(h, hdl, sycl::access::mode::write);
+        hdl.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_h[idx] = acc_e[idx] + acc_g[idx];
         });
     });
@@ -111,7 +109,7 @@ void test1() {
 
     {
         h.copy_device_to_host();
-        myHostAccessor host_acc_h(h, access::mode::read);
+        myHostAccessor host_acc_h(h, sycl::access::mode::read);
         long long count = 0;
         for (size_t i = 0; i < N; ++i) {
             count += host_acc_h[i];
@@ -130,22 +128,22 @@ void test2() {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    queue q;
+    sycl::queue q;
 
-    buffer<int> a(N);
-    buffer<int> b(N);
-    buffer<int> c(N);
-    buffer<int> d(N);
-    buffer<int> e(N);
-    buffer<int> f(N);
-    buffer<int> g(N);
-    buffer<int> h(N);
+    sycl::buffer<int> a(N);
+    sycl::buffer<int> b(N);
+    sycl::buffer<int> c(N);
+    sycl::buffer<int> d(N);
+    sycl::buffer<int> e(N);
+    sycl::buffer<int> f(N);
+    sycl::buffer<int> g(N);
+    sycl::buffer<int> h(N);
 
     {
-        host_accessor host_acc_a(a, write_only);
-        host_accessor host_acc_b(b, write_only);
-        host_accessor host_acc_d(d, write_only);
-        host_accessor host_acc_f(f, write_only);
+        sycl::host_accessor host_acc_a(a, sycl::write_only);
+        sycl::host_accessor host_acc_b(b, sycl::write_only);
+        sycl::host_accessor host_acc_d(d, sycl::write_only);
+        sycl::host_accessor host_acc_f(f, sycl::write_only);
         for (size_t i = 0; i < N; ++i) {
             host_acc_a[i] = i;
             host_acc_b[i] = i;
@@ -154,44 +152,44 @@ void test2() {
         }
     }
 
-    q.submit([&](handler& h) {
-        accessor acc_a(a, h, read_only);
-        accessor acc_b(b, h, read_only);
-        accessor acc_c(c, h, write_only);
-        h.parallel_for(range<1>(N), [=](id<1> idx) {
+    q.submit([&](sycl::handler& h) {
+        sycl::accessor acc_a(a, h, sycl::read_only);
+        sycl::accessor acc_b(b, h, sycl::read_only);
+        sycl::accessor acc_c(c, h, sycl::write_only);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_c[idx] = acc_a[idx] + acc_b[idx];
         });
     });
 
-    q.submit([&](handler& h) {
-        accessor acc_c(c, h, read_only);
-        accessor acc_d(d, h, read_only);
-        accessor acc_e(e, h, write_only);
-        h.parallel_for(range<1>(N), [=](id<1> idx) {
+    q.submit([&](sycl::handler& h) {
+        sycl::accessor acc_c(c, h, sycl::read_only);
+        sycl::accessor acc_d(d, h, sycl::read_only);
+        sycl::accessor acc_e(e, h, sycl::write_only);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_e[idx] = acc_c[idx] + acc_d[idx];
         });
     });
 
-    q.submit([&](handler& h) {
-        accessor acc_c(c, h, read_only);
-        accessor acc_f(f, h, read_only);
-        accessor acc_g(g, h, write_only);
-        h.parallel_for(range<1>(N), [=](id<1> idx) {
+    q.submit([&](sycl::handler& h) {
+        sycl::accessor acc_c(c, h, sycl::read_only);
+        sycl::accessor acc_f(f, h, sycl::read_only);
+        sycl::accessor acc_g(g, h, sycl::write_only);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_g[idx] = acc_c[idx] + acc_f[idx];
         });
     });
 
-    q.submit([&](handler& hdl) {
-        accessor acc_e(e, hdl, read_only);
-        accessor acc_g(g, hdl, read_only);
-        accessor acc_h(h, hdl, write_only);
-        hdl.parallel_for(range<1>(N), [=](id<1> idx) {
+    q.submit([&](sycl::handler& hdl) {
+        sycl::accessor acc_e(e, hdl, sycl::read_only);
+        sycl::accessor acc_g(g, hdl, sycl::read_only);
+        sycl::accessor acc_h(h, hdl, sycl::write_only);
+        hdl.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
             acc_h[idx] = acc_e[idx] + acc_g[idx];
         });
     });
 
     {
-        host_accessor host_acc_h(h, read_only);
+        sycl::host_accessor host_acc_h(h, sycl::read_only);
         long long count = 0;
         for (size_t i = 0; i < N; ++i) {
             count += host_acc_h[i];
