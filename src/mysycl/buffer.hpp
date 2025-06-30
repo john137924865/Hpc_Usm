@@ -4,8 +4,10 @@
 #include <vector>
 #include <iostream>
 
-template <typename T>
-class myBuffer {
+namespace mysycl {
+
+    template <typename T>
+    class buffer {
 
     private:
         std::string name;
@@ -22,14 +24,14 @@ class myBuffer {
 
     public:
 
-        myBuffer(sycl::queue& q, size_t n, std::string name) : size(n) {
+        buffer(sycl::queue& q, size_t n, std::string name) : size(n) {
             this->device_data = static_cast<T*>(malloc_device(sizeof(T) * size, q));
             this->host_data = new T[size];
             this->q = &q;
             this->name = name;
         }
 
-        ~myBuffer() {
+        ~buffer() {
             sycl::free(device_data, *q);
             delete[] host_data;
         }
@@ -45,26 +47,26 @@ class myBuffer {
         T* get_device_data() {
             return device_data;
         }
-        
+
         T* get_host_data() {
             return host_data;
         }
 
         void check_mode(sycl::access::mode mode, sycl::handler& h) {
             if (mode != sycl::access::mode::read) {
-                std::cout << name << " depends_on " << events.size() << " ";
+                //std::cout << name << " depends_on " << events.size() << " ";
                 for (int i = 0; i < events.size(); i++) {
                     h.depends_on(events[i]);
-                    std::cout << names[i] << " ";
+                    //std::cout << names[i] << " ";
                 }
-                std::cout << ";" << std::endl;
+                //std::cout << ";" << std::endl;
                 events.clear();
                 names.clear();
                 current_write = true;
             }
             if (ever_write) {
                 h.depends_on(last_write[0]);
-                std::cout << name << " depends_on last_write " << last_write_name[0] << std::endl;
+                //std::cout << name << " depends_on last_write " << last_write_name[0] << std::endl;
             }
             //std::cout << "check_mode; size : " << events.size() << ", write: " << std::boolalpha << write << std::endl;
         }
@@ -76,14 +78,16 @@ class myBuffer {
                 last_write_name.clear();
                 last_write.push_back(e);
                 last_write_name.push_back(name);
-                std::cout << this->name << " aggiorno last_write con " << name << std::endl;
+                //std::cout << this->name << " aggiorno last_write con " << name << std::endl;
                 current_write = false;
-            } else {
+            }
+            else {
                 events.push_back(e);
                 names.push_back(name);
-                std::cout << this->name << " push_back events e names " << name << std::endl;
+                //std::cout << this->name << " push_back events e names " << name << std::endl;
             }
             //std::cout << "add_event; size : " << events.size() << ", write: " << std::boolalpha << write << std::endl;
         }
 
-};
+    };
+}

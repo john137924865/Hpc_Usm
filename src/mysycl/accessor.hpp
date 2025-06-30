@@ -2,10 +2,11 @@
 
 #include <sycl/sycl.hpp>
 #include <iostream>
-#include "myBuffer.cpp"
 
-template <typename T>
-class myAccessor {
+namespace mysycl {
+
+    template <typename T>
+    class accessor {
 
     private:
         T* device_data;
@@ -13,8 +14,8 @@ class myAccessor {
 
     public:
 
-        myAccessor(myBuffer<T>& buf, sycl::handler& h, sycl::access::mode mode = sycl::access::mode::read_write) : 
-                device_data(buf.get_device_data()), mode(mode) {
+        accessor(mysycl::buffer<T>& buf, sycl::handler& h, sycl::access::mode mode = sycl::access::mode::read_write) :
+            device_data(buf.get_device_data()), mode(mode) {
             buf.check_mode(mode, h);
         }
 
@@ -22,4 +23,5 @@ class myAccessor {
             return device_data[index];
         }
 
-};
+    };
+}

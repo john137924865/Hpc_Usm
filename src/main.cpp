@@ -1,18 +1,23 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 #include <chrono>
-#include "myBuffer.cpp"
-#include "myHostAccessor.cpp"
-#include "myAccessor.cpp"
+#include "mysycl/mysycl.hpp"
 
 void test1();
 void test2();
+void test3();
 
-constexpr size_t N = 10000000;
+int N = 1000000;
 
 int main() {
+    int t;
+    std::cout << "Milioni: ";
+    std::cin >> t;
+    N *= t;
+    std::cout << N << std::endl << std::endl;
     test1();
     test2();
+    test3();
 }
 
 void test1() {
@@ -21,106 +26,110 @@ void test1() {
 
     sycl::queue q;
 
-    myBuffer<int> a(q, N, "a");
-    myBuffer<int> b(q, N, "b");
-    myBuffer<int> c(q, N, "c");
-    myBuffer<int> d(q, N, "d");
-    myBuffer<int> e(q, N, "e");
-    myBuffer<int> f(q, N, "f");
-    myBuffer<int> g(q, N, "g");
-    myBuffer<int> h(q, N, "h");
-
     {
-        myHostAccessor host_acc_a(a, sycl::access::mode::write);
-        myHostAccessor host_acc_b(b, sycl::access::mode::write);
-        myHostAccessor host_acc_d(d, sycl::access::mode::write);
-        myHostAccessor host_acc_f(f, sycl::access::mode::write);
-        for (size_t i = 0; i < N; ++i) {
-            host_acc_a[i] = i;
-            host_acc_b[i] = i;
-            host_acc_d[i] = i;
-            host_acc_f[i] = i;
+
+        mysycl::buffer<int> a(q, N, "a");
+        mysycl::buffer<int> b(q, N, "b");
+        mysycl::buffer<int> c(q, N, "c");
+        mysycl::buffer<int> d(q, N, "d");
+        mysycl::buffer<int> e(q, N, "e");
+        mysycl::buffer<int> f(q, N, "f");
+        mysycl::buffer<int> g(q, N, "g");
+        mysycl::buffer<int> h(q, N, "h");
+
+        {
+            mysycl::host_accessor host_acc_a(a, sycl::access::mode::write);
+            mysycl::host_accessor host_acc_b(b, sycl::access::mode::write);
+            mysycl::host_accessor host_acc_d(d, sycl::access::mode::write);
+            mysycl::host_accessor host_acc_f(f, sycl::access::mode::write);
+            for (size_t i = 0; i < N; ++i) {
+                host_acc_a[i] = i;
+                host_acc_b[i] = i;
+                host_acc_d[i] = i;
+                host_acc_f[i] = i;
+            }
+            a.copy_host_to_device();
+            b.copy_host_to_device();
+            d.copy_host_to_device();
+            f.copy_host_to_device();
         }
-        a.copy_host_to_device();
-        b.copy_host_to_device();
-        d.copy_host_to_device();
-        f.copy_host_to_device();
-    }
 
-    std::cout << std::endl << " - a_b_c" << std::endl;
+        //std::cout << std::endl << " - a_b_c" << std::endl;
 
-    sycl::event a_b_c = q.submit([&](sycl::handler& h) {
-        myAccessor acc_a(a, h, sycl::access::mode::read);
-        myAccessor acc_b(b, h, sycl::access::mode::read);
-        myAccessor acc_c(c, h, sycl::access::mode::write);
-        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-            acc_c[idx] = acc_a[idx] + acc_b[idx];
-        });
-    });
-    a.add_event(a_b_c, "a_b_c");
-    b.add_event(a_b_c, "a_b_c");
-    c.add_event(a_b_c, "a_b_c");
+        sycl::event a_b_c = q.submit([&](sycl::handler& h) {
+            mysycl::accessor acc_a(a, h, sycl::access::mode::read);
+            mysycl::accessor acc_b(b, h, sycl::access::mode::read);
+            mysycl::accessor acc_c(c, h, sycl::access::mode::write);
+            h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+                acc_c[idx] = acc_a[idx] + acc_b[idx];
+                });
+            });
+        a.add_event(a_b_c, "a_b_c");
+        b.add_event(a_b_c, "a_b_c");
+        c.add_event(a_b_c, "a_b_c");
 
-    std::cout << std::endl << " - c_d_e" << std::endl;
+        //std::cout << std::endl << " - c_d_e" << std::endl;
 
-    sycl::event c_d_e = q.submit([&](sycl::handler& h) {
-        myAccessor acc_c(c, h, sycl::access::mode::read);
-        myAccessor acc_d(d, h, sycl::access::mode::read);
-        myAccessor acc_e(e, h, sycl::access::mode::write);
-        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-            acc_e[idx] = acc_c[idx] + acc_d[idx];
-        });
-    });
-    c.add_event(c_d_e, "c_d_e");
-    d.add_event(c_d_e, "c_d_e");
-    e.add_event(c_d_e, "c_d_e");
+        sycl::event c_d_e = q.submit([&](sycl::handler& h) {
+            mysycl::accessor acc_c(c, h, sycl::access::mode::read);
+            mysycl::accessor acc_d(d, h, sycl::access::mode::read);
+            mysycl::accessor acc_e(e, h, sycl::access::mode::write);
+            h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+                acc_e[idx] = acc_c[idx] + acc_d[idx];
+                });
+            });
+        c.add_event(c_d_e, "c_d_e");
+        d.add_event(c_d_e, "c_d_e");
+        e.add_event(c_d_e, "c_d_e");
 
-    std::cout << std::endl << " - c_f_g" << std::endl;
+        //std::cout << std::endl << " - c_f_g" << std::endl;
 
-    sycl::event c_f_g = q.submit([&](sycl::handler& h) {
-        myAccessor acc_c(c, h, sycl::access::mode::read);
-        myAccessor acc_f(f, h, sycl::access::mode::read);
-        myAccessor acc_g(g, h, sycl::access::mode::write);
-        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-            acc_g[idx] = acc_c[idx] + acc_f[idx];
-        });
-    });
-    c.add_event(c_f_g, "c_f_g");
-    f.add_event(c_f_g, "c_f_g");
-    g.add_event(c_f_g, "c_f_g");
+        sycl::event c_f_g = q.submit([&](sycl::handler& h) {
+            mysycl::accessor acc_c(c, h, sycl::access::mode::read);
+            mysycl::accessor acc_f(f, h, sycl::access::mode::read);
+            mysycl::accessor acc_g(g, h, sycl::access::mode::write);
+            h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+                acc_g[idx] = acc_c[idx] + acc_f[idx];
+                });
+            });
+        c.add_event(c_f_g, "c_f_g");
+        f.add_event(c_f_g, "c_f_g");
+        g.add_event(c_f_g, "c_f_g");
 
-    std::cout << std::endl << " - e_g_h" << std::endl;
+        //std::cout << std::endl << " - e_g_h" << std::endl;
 
-    sycl::event e_g_h = q.submit([&](sycl::handler& hdl) {
-        myAccessor acc_e(e, hdl, sycl::access::mode::read);
-        myAccessor acc_g(g, hdl, sycl::access::mode::read);
-        myAccessor acc_h(h, hdl, sycl::access::mode::write);
-        hdl.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-            acc_h[idx] = acc_e[idx] + acc_g[idx];
-        });
-    });
-    e.add_event(e_g_h, "e_g_h");
-    g.add_event(e_g_h, "e_g_h");
-    h.add_event(e_g_h, "e_g_h");
+        sycl::event e_g_h = q.submit([&](sycl::handler& hdl) {
+            mysycl::accessor acc_e(e, hdl, sycl::access::mode::read);
+            mysycl::accessor acc_g(g, hdl, sycl::access::mode::read);
+            mysycl::accessor acc_h(h, hdl, sycl::access::mode::write);
+            hdl.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+                acc_h[idx] = acc_e[idx] + acc_g[idx];
+                });
+            });
+        e.add_event(e_g_h, "e_g_h");
+        g.add_event(e_g_h, "e_g_h");
+        h.add_event(e_g_h, "e_g_h");
 
-    std::cout << std::endl;
+        //std::cout << std::endl;
 
-    q.wait();
+        q.wait();
 
-    {
-        h.copy_device_to_host();
-        myHostAccessor host_acc_h(h, sycl::access::mode::read);
-        long long count = 0;
-        for (size_t i = 0; i < N; ++i) {
-            count += host_acc_h[i];
+        {
+            h.copy_device_to_host();
+            mysycl::host_accessor host_acc_h(h, sycl::access::mode::read);
+            long long count = 0;
+            for (size_t i = 0; i < N; ++i) {
+                count += host_acc_h[i];
+            }
+            std::cout << count << std::endl;
         }
-        std::cout << count << std::endl;
+
     }
 
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "test1: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+    std::cout << "test1 mySycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
 
 }
 
@@ -200,6 +209,99 @@ void test2() {
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "test2: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+    std::cout << "test2 sycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+
+}
+
+void test3() {
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    sycl::queue q;
+
+    int* a = sycl::malloc_device<int>(N, q);
+    int* b = sycl::malloc_device<int>(N, q);
+    int* c = sycl::malloc_device<int>(N, q);
+    int* d = sycl::malloc_device<int>(N, q);
+    int* e = sycl::malloc_device<int>(N, q);
+    int* f = sycl::malloc_device<int>(N, q);
+    int* g = sycl::malloc_device<int>(N, q);
+    int* h = sycl::malloc_device<int>(N, q);
+
+    std::vector<int> host_a(N);
+    std::vector<int> host_b(N);
+    std::vector<int> host_d(N);
+    std::vector<int> host_f(N);
+
+    std::vector<int> host_h(N);
+
+    //inizializzo dati host
+    for (size_t i = 0; i < N; ++i) {
+        host_a[i] = i;
+        host_b[i] = i;
+        host_d[i] = i;
+        host_f[i] = i;
+    }
+
+    //copio dati da host a device
+    q.memcpy(a, host_a.data(), N * sizeof(int)).wait();
+    q.memcpy(b, host_b.data(), N * sizeof(int)).wait();
+    q.memcpy(d, host_d.data(), N * sizeof(int)).wait();
+    q.memcpy(f, host_f.data(), N * sizeof(int)).wait();
+
+    //c = a + b
+    auto cab = q.submit([&](sycl::handler& h) {
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+            c[idx] = a[idx] + b[idx];
+            });
+        });
+
+    //e = c + d
+    auto ecd = q.submit([&](sycl::handler& h) {
+        h.depends_on(cab);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+            e[idx] = c[idx] + d[idx];
+            });
+        });
+
+    //g = c + f
+    auto gcf = q.submit([&](sycl::handler& h) {
+        h.depends_on(cab);
+        h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+            g[idx] = c[idx] + f[idx];
+            });
+        });
+
+    //h = e + g
+    q.submit([&](sycl::handler& hdl) {
+        hdl.depends_on(ecd);
+        hdl.depends_on(gcf);
+        hdl.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+            h[idx] = e[idx] + g[idx];
+            });
+        }).wait();
+
+    //copio dati da device a host
+    q.memcpy(host_h.data(), h, N * sizeof(int)).wait();
+
+    long long count = 0;
+    for (size_t i = 0; i < N; ++i) {
+        count += host_h[i];
+    }
+    std::cout << count << std::endl;
+
+    sycl::free(a, q);
+    sycl::free(b, q);
+    sycl::free(c, q);
+    sycl::free(d, q);
+    sycl::free(e, q);
+    sycl::free(f, q);
+    sycl::free(g, q);
+    sycl::free(h, q);
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "test3 esplicito: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
 
 }
