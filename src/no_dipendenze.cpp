@@ -139,8 +139,9 @@ namespace no_dipendenze {
             //std::cout << count << std::endl;
         }
 
-        for (auto p : arrays_dev) {
-            sycl::free(p, q);
+        for (int i = 0; i < num_kernels; i++) {
+            sycl::free(arrays_dev[i], q);
+            delete[] arrays_host[i];
         }
 
         auto end = std::chrono::high_resolution_clock::now();

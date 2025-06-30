@@ -15,5 +15,6 @@ int main() {
     std::cout << num_kernels << std::endl << std::endl;
     size *= 1000000;
 
+    //diamante_4::diamante_4(size);
     no_dipendenze::no_dipendenze(size, num_kernels);
 }
