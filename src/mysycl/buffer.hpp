@@ -24,7 +24,7 @@ namespace mysycl {
 
     public:
 
-        buffer(sycl::queue& q, size_t n, std::string name) : size(n) {
+        buffer(sycl::queue& q, size_t n, std::string name = "") : size(n) {
             this->device_data = static_cast<T*>(malloc_device(sizeof(T) * size, q));
             this->host_data = new T[size];
             this->q = &q;
