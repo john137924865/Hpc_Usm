@@ -39,7 +39,7 @@ namespace no_dipendenze {
                 buffers[i].add_event(q.submit([&](sycl::handler& h) {
                     mysycl::accessor acc(buffers[i], h, sycl::access::mode::write);
                     h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-                        acc[idx] = idx;;
+                        acc[idx] = idx;
                         });
                     }), "");
             }
@@ -83,7 +83,7 @@ namespace no_dipendenze {
                 q.submit([&](sycl::handler& h) {
                     sycl::accessor acc(buffers[i], h, sycl::write_only);
                     h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-                        acc[idx] = idx;;
+                        acc[idx] = idx;
                         });
                     });
             }
