@@ -22,8 +22,8 @@ namespace dipendenza_albero_binario {
         num_foglie = 1 << (livelli - 1);
         std::cout << "Num_foglie: " << num_foglie << std::endl << std::endl;
         test1();
-        //test2();
-        //test3();
+        test2();
+        test3();
     }
 
     void test1() {
@@ -51,7 +51,7 @@ namespace dipendenza_albero_binario {
             //kernel da 1 a 'num_kernels - 2'
             for (int i = 1; i < num_kernels - 1; i++) {
                 int padre_idx = (i-1)/2;
-                std::cout << "figlio: " << i << " padre: " << padre_idx << std::endl;
+                //std::cout << "figlio: " << i << " padre: " << padre_idx << std::endl;
                 auto e = q.submit([&](sycl::handler& h) {
                     mysycl::accessor acc(buffers[i], h, sycl::access::mode::write);
                     mysycl::accessor padre(buffers[padre_idx], h, sycl::access::mode::read);
@@ -68,12 +68,12 @@ namespace dipendenza_albero_binario {
             long long count = 0;
             for (int i = 0; i < num_foglie; i++) {
                 int indice_foglia = num_foglie - 1 + i;
-                std::cout << "indice_foglia: " << indice_foglia << "; ";
+                //std::cout << "indice_foglia: " << indice_foglia << "; ";
                 buffers[indice_foglia].copy_device_to_host();
                 mysycl::host_accessor host_acc(buffers[indice_foglia], sycl::access::mode::read);
                 count += host_acc[0];
-                std::cout << "count: " << count << std::endl;
             }
+            std::cout << "count: " << count << std::endl;
 
         }
 
@@ -92,23 +92,41 @@ namespace dipendenza_albero_binario {
 
         {
 
-            sycl::buffer<int> buffer(N);
+            std::vector<sycl::buffer<int>> buffers;
+            buffers.reserve(num_kernels - 1);
+            for (int i = 0; i < num_kernels - 1; i++) {
+                buffers.emplace_back(N);
+            }
 
-            for (int i = 0; i < num_kernels; i++) {
+            //kernel 0
+            q.submit([&](sycl::handler& h) {
+                sycl::accessor acc(buffers[0], h, sycl::write_only);
+                h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
+                    acc[idx] = 1;
+                    });
+                });
+
+            //kernel da 1 a 'num_kernels - 2'
+            for (int i = 1; i < num_kernels - 1; i++) {
+                int padre_idx = (i - 1) / 2;
+                //std::cout << "figlio: " << i << " padre: " << padre_idx << std::endl;
                 q.submit([&](sycl::handler& h) {
-                    sycl::accessor acc(buffer, h, sycl::write_only);
+                    sycl::accessor acc(buffers[i], h, sycl::write_only);
+                    sycl::accessor padre(buffers[padre_idx], h, sycl::read_only);
                     h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-                        acc[idx] = i + 1;
+                        acc[idx] = padre[idx];
                         });
                     });
             }
 
-            sycl::host_accessor host_acc(buffer, sycl::read_only);
             long long count = 0;
-            for (int j = 0; j < N; j++) {
-                count += host_acc[j];
+            for (int i = 0; i < num_foglie; i++) {
+                int indice_foglia = num_foglie - 1 + i;
+                //std::cout << "indice_foglia: " << indice_foglia << "; ";
+                sycl::host_accessor host_acc(buffers[indice_foglia], sycl::read_only);
+                count += host_acc[0];
             }
-            std::cout << count / N << std::endl;
+            std::cout << "count: " << count << std::endl;
 
         }
 
@@ -125,39 +143,59 @@ namespace dipendenza_albero_binario {
 
         sycl::queue q;
 
-        int* array_dev = sycl::malloc_device<int>(N, q);
-        int* array_host = new int[N];
-
-        sycl::event e;
+        std::vector<int*> arrays_dev;
+        std::vector<int*> arrays_host;
+        std::vector<sycl::event> events;
+        arrays_dev.reserve(num_kernels - 1);
+        arrays_host.reserve(num_foglie);
+        events.reserve(num_kernels - 1);
+        for (int i = 0; i < num_kernels - 1; i++) {
+            arrays_dev[i] = sycl::malloc_device<int>(N, q);
+        }
+        for (int i = 0; i < num_foglie; i++) {
+            arrays_host[i] = new int[N];
+        }
 
         //kernel 0
-        e = q.submit([&](sycl::handler& h) {
+        int* array_dev_0 = arrays_dev[0];
+        events.push_back(q.submit([&](sycl::handler& h) {
             h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-                array_dev[idx] = 0 + 1;
+                array_dev_0[idx] = 1;
                 });
-            });
+            }));
 
-        //kernel da 1 a 'num_kernels - 1'
-        for (int i = 1; i < num_kernels; i++) {
-            e = q.submit([&](sycl::handler& h) {
+        //kernel da 1 a 'num_kernels - 2'
+        for (int i = 1; i < num_kernels - 1; i++) {
+            int padre_idx = (i - 1) / 2;
+            int* figlio = arrays_dev[i];
+            int* padre = arrays_dev[padre_idx];
+            auto e = events[padre_idx];
+            //std::cout << "figlio: " << i << " padre: " << padre_idx << std::endl;
+            events.push_back(q.submit([&](sycl::handler& h) {
                 h.depends_on(e);
                 h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
-                    array_dev[idx] = i + 1;
-                });
-            });
+                    figlio[idx] = padre[idx];
+                    });
+                }));
         }
 
         q.wait();
 
-        q.memcpy(array_host, array_dev, N * sizeof(int)).wait();
         long long count = 0;
-        for (int j = 0; j < N; j++) {
-            count += array_host[j];
+        for (int i = 0; i < num_foglie; i++) {
+            int indice_foglia = num_foglie - 1 + i;
+            //std::cout << "indice_foglia: " << indice_foglia << "; ";
+            q.memcpy(arrays_host[i], arrays_dev[indice_foglia], N * sizeof(int)).wait();
+            count += arrays_host[i][0];
         }
-        std::cout << count / N << std::endl;
+        std::cout << "count: " << count << std::endl;
 
-        sycl::free(array_dev, q);
-        delete[] array_host;
+        for (int i = 0; i < num_kernels - 1; i++) {
+            sycl::free(arrays_dev[i], q);
+        }
+        for (int i = 0; i < num_foglie; i++) {
+            delete[] arrays_host[i];
+        }
 
         auto end = std::chrono::high_resolution_clock::now();
 

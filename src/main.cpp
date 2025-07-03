@@ -9,13 +9,13 @@
 
 int main() {
     int size, num_kernels;
-    std::cout << "Migliaia: ";
+    std::cout << "Milioni: ";
     std::cin >> size;
     std::cout << size << std::endl << std::endl;
     std::cout << "Numero kernel +1 (scrivi 8 ma albero ha 7): ";
     std::cin >> num_kernels;
     std::cout << num_kernels << std::endl << std::endl;
-    size *= 1000;
+    size *= 1000000;
 
     //diamante_4::diamante_4(size);
     //no_dipendenze::no_dipendenze(size, num_kernels);
