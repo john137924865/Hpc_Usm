@@ -16,6 +16,7 @@ namespace mysycl {
 
         host_accessor(mysycl::buffer<T>& buf, sycl::access::mode mode = sycl::access::mode::read_write) :
             host_data(buf.get_host_data()), mode(mode) {
+            buf.get_queue()->wait();
         }
 
         T& operator[](size_t index) {

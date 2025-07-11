@@ -52,6 +52,10 @@ namespace mysycl {
             return host_data;
         }
 
+        sycl::queue* get_queue() {
+            return this->q;
+        }
+
         void check_mode(sycl::access::mode mode, sycl::handler& h) {
             if (mode != sycl::access::mode::read) {
                 //std::cout << name << " depends_on " << events.size() << " ";
