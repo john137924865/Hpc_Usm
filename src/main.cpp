@@ -18,7 +18,7 @@ int main() {
     size *= 1000;
 
     //diamante_4::diamante_4(size);
-    no_dipendenze::no_dipendenze(size, num_kernels);
+    //no_dipendenze::no_dipendenze(size, num_kernels);
     //dipendenza_lineare::dipendenza_lineare(size, num_kernels);
-    //dipendenza_albero_binario::dipendenza_albero_binario(size, num_kernels);
+    dipendenza_albero_binario::dipendenza_albero_binario(size, num_kernels);
 }

@@ -32,6 +32,7 @@ namespace mysycl {
         }
 
         ~buffer() {
+            (*q).wait();
             sycl::free(device_data, *q);
             delete[] host_data;
         }

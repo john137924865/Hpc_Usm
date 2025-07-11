@@ -63,8 +63,6 @@ namespace dipendenza_albero_binario {
                 buffers[padre_idx].add_event(e, "");
             }
 
-            q.wait();
-
             long long count = 0;
             for (int i = 0; i < num_foglie; i++) {
                 int indice_foglia = num_foglie - 1 + i;
