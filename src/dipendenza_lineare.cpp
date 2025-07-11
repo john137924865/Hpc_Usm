@@ -31,6 +31,7 @@ namespace dipendenza_lineare {
 
             mysycl::buffer<int> buffer(q, N);
 
+            buffer.prepareForDevice();
             for (int i = 0; i < num_kernels; i++) {
                 buffer.add_event(q.submit([&](sycl::handler& h) {
                     mysycl::accessor acc(buffer, h, sycl::access::mode::write);
@@ -40,9 +41,6 @@ namespace dipendenza_lineare {
                     }), "");
             }
 
-            q.wait();
-
-            buffer.copy_device_to_host();
             mysycl::host_accessor host_acc(buffer, sycl::access::mode::read);
             long long count = 0;
             for (int j = 0; j < N; j++) {

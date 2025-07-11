@@ -46,14 +46,13 @@ namespace diamante_4 {
                     host_acc_d[i] = i;
                     host_acc_f[i] = i;
                 }
-                a.copy_host_to_device();
-                b.copy_host_to_device();
-                d.copy_host_to_device();
-                f.copy_host_to_device();
             }
 
             //std::cout << std::endl << " - a_b_c" << std::endl;
 
+            a.prepareForDevice();
+            b.prepareForDevice();
+            c.prepareForDevice();
             sycl::event a_b_c = q.submit([&](sycl::handler& h) {
                 mysycl::accessor acc_a(a, h, sycl::access::mode::read);
                 mysycl::accessor acc_b(b, h, sycl::access::mode::read);
@@ -68,6 +67,9 @@ namespace diamante_4 {
 
             //std::cout << std::endl << " - c_d_e" << std::endl;
 
+            c.prepareForDevice();
+            d.prepareForDevice();
+            e.prepareForDevice();
             sycl::event c_d_e = q.submit([&](sycl::handler& h) {
                 mysycl::accessor acc_c(c, h, sycl::access::mode::read);
                 mysycl::accessor acc_d(d, h, sycl::access::mode::read);
@@ -82,6 +84,9 @@ namespace diamante_4 {
 
             //std::cout << std::endl << " - c_f_g" << std::endl;
 
+            c.prepareForDevice();
+            f.prepareForDevice();
+            g.prepareForDevice();
             sycl::event c_f_g = q.submit([&](sycl::handler& h) {
                 mysycl::accessor acc_c(c, h, sycl::access::mode::read);
                 mysycl::accessor acc_f(f, h, sycl::access::mode::read);
@@ -96,6 +101,9 @@ namespace diamante_4 {
 
             //std::cout << std::endl << " - e_g_h" << std::endl;
 
+            e.prepareForDevice();
+            g.prepareForDevice();
+            h.prepareForDevice();
             sycl::event e_g_h = q.submit([&](sycl::handler& hdl) {
                 mysycl::accessor acc_e(e, hdl, sycl::access::mode::read);
                 mysycl::accessor acc_g(g, hdl, sycl::access::mode::read);
@@ -110,10 +118,7 @@ namespace diamante_4 {
 
             //std::cout << std::endl;
 
-            q.wait();
-
             {
-                h.copy_device_to_host();
                 mysycl::host_accessor host_acc_h(h, sycl::access::mode::read);
                 long long count = 0;
                 for (size_t i = 0; i < N; ++i) {

@@ -22,6 +22,9 @@ namespace mysycl {
         bool current_write = false;
         bool ever_write = false;
 
+        //data movement (0: device, 1:host, 2:both)
+        int lastData = 2;
+
     public:
 
         buffer(sycl::queue& q, size_t n, std::string name = "") : size(n) {
@@ -32,9 +35,34 @@ namespace mysycl {
         }
 
         ~buffer() {
+            /* data movement */
             (*q).wait();
+            //se sta su device copio su host
+            if (this->getLastData() == 0) {
+                std::cout << "copio device to host - distr " << std::endl;
+                this->copy_device_to_host();
+            }
+            /* libera memoria */
             sycl::free(device_data, *q);
             delete[] host_data;
+        }
+
+        /* data movement */
+
+        void prepareForDevice() {
+            //se sta su host copio su device
+            if (this->getLastData() == 1) {
+                std::cout << "copio host to device " << std::endl;
+                this->copy_host_to_device();
+            }
+        }
+
+        int getLastData() {
+            return this->lastData;
+        }
+
+        void setLastData(int l) {
+            this->lastData = l;
         }
 
         void copy_host_to_device() {
@@ -56,6 +84,8 @@ namespace mysycl {
         sycl::queue* get_queue() {
             return this->q;
         }
+
+        /* dipendenze eventi */
 
         void check_mode(sycl::access::mode mode, sycl::handler& h) {
             if (mode != sycl::access::mode::read) {

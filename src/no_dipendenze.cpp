@@ -36,6 +36,7 @@ namespace no_dipendenze {
             }
 
             for (int i = 0; i < num_kernels; i++) {
+                buffers[i].prepareForDevice();
                 buffers[i].add_event(q.submit([&](sycl::handler& h) {
                     mysycl::accessor acc(buffers[i], h, sycl::access::mode::write);
                     h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
@@ -43,11 +44,8 @@ namespace no_dipendenze {
                         });
                     }), "");
             }
-
-            q.wait();
-
+ 
             for (int i = 0; i < num_kernels; i++) {
-                buffers[i].copy_device_to_host();
                 mysycl::host_accessor host_acc(buffers[i], sycl::access::mode::read);
                 long long count = 0;
                 for (int j = 0; j < N; j++) {

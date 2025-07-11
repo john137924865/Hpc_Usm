@@ -41,6 +41,7 @@ namespace dipendenza_albero_binario {
             }
 
             //kernel 0
+            buffers[0].prepareForDevice();
             buffers[0].add_event(q.submit([&](sycl::handler& h) {
                 mysycl::accessor acc(buffers[0], h, sycl::access::mode::write);
                 h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
@@ -51,6 +52,8 @@ namespace dipendenza_albero_binario {
             //kernel da 1 a 'num_kernels - 2'
             for (int i = 1; i < num_kernels - 1; i++) {
                 int padre_idx = (i-1)/2;
+                buffers[i].prepareForDevice();
+                buffers[padre_idx].prepareForDevice();
                 //std::cout << "figlio: " << i << " padre: " << padre_idx << std::endl;
                 auto e = q.submit([&](sycl::handler& h) {
                     mysycl::accessor acc(buffers[i], h, sycl::access::mode::write);
@@ -67,7 +70,6 @@ namespace dipendenza_albero_binario {
             for (int i = 0; i < num_foglie; i++) {
                 int indice_foglia = num_foglie - 1 + i;
                 //std::cout << "indice_foglia: " << indice_foglia << "; ";
-                buffers[indice_foglia].copy_device_to_host();
                 mysycl::host_accessor host_acc(buffers[indice_foglia], sycl::access::mode::read);
                 count += host_acc[0];
             }
