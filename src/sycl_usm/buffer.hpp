@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 
-namespace mysycl {
+namespace sycl_usm {
 
     template <typename T>
     class buffer {

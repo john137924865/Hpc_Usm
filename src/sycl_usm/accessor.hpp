@@ -3,7 +3,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 
-namespace mysycl {
+namespace sycl_usm {
 
     template <typename T>
     class accessor {
@@ -14,7 +14,7 @@ namespace mysycl {
 
     public:
 
-        accessor(mysycl::buffer<T>& buf, sycl::handler& h, sycl::access::mode mode = sycl::access::mode::read_write) :
+        accessor(sycl_usm::buffer<T>& buf, sycl::handler& h, sycl::access::mode mode = sycl::access::mode::read_write) :
             device_data(buf.get_device_data()), mode(mode) {
                 /* dipendenze eventi */
                 buf.check_mode(mode, h);

@@ -1,7 +1,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 #include <chrono>
-#include "mysycl/mysycl.hpp"
+#include "sycl_usm/sycl_usm.hpp"
 #include "diamante_4.cpp"
 #include "no_dipendenze.cpp"
 #include "dipendenza_lineare.cpp"

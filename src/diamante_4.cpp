@@ -1,7 +1,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 #include <chrono>
-#include "mysycl/mysycl.hpp"
+#include "sycl_usm/sycl_usm.hpp"
 
 namespace diamante_4 {
 
@@ -26,20 +26,20 @@ namespace diamante_4 {
 
         {
 
-            mysycl::buffer<int> a(q, N, "a");
-            mysycl::buffer<int> b(q, N, "b");
-            mysycl::buffer<int> c(q, N, "c");
-            mysycl::buffer<int> d(q, N, "d");
-            mysycl::buffer<int> e(q, N, "e");
-            mysycl::buffer<int> f(q, N, "f");
-            mysycl::buffer<int> g(q, N, "g");
-            mysycl::buffer<int> h(q, N, "h");
+            sycl_usm::buffer<int> a(q, N, "a");
+            sycl_usm::buffer<int> b(q, N, "b");
+            sycl_usm::buffer<int> c(q, N, "c");
+            sycl_usm::buffer<int> d(q, N, "d");
+            sycl_usm::buffer<int> e(q, N, "e");
+            sycl_usm::buffer<int> f(q, N, "f");
+            sycl_usm::buffer<int> g(q, N, "g");
+            sycl_usm::buffer<int> h(q, N, "h");
 
             {
-                mysycl::host_accessor host_acc_a(a, sycl::access::mode::write);
-                mysycl::host_accessor host_acc_b(b, sycl::access::mode::write);
-                mysycl::host_accessor host_acc_d(d, sycl::access::mode::write);
-                mysycl::host_accessor host_acc_f(f, sycl::access::mode::write);
+                sycl_usm::host_accessor host_acc_a(a, sycl::access::mode::write);
+                sycl_usm::host_accessor host_acc_b(b, sycl::access::mode::write);
+                sycl_usm::host_accessor host_acc_d(d, sycl::access::mode::write);
+                sycl_usm::host_accessor host_acc_f(f, sycl::access::mode::write);
                 for (size_t i = 0; i < N; ++i) {
                     host_acc_a[i] = i;
                     host_acc_b[i] = i;
@@ -54,9 +54,9 @@ namespace diamante_4 {
             b.prepareForDevice();
             c.prepareForDevice();
             sycl::event a_b_c = q.submit([&](sycl::handler& h) {
-                mysycl::accessor acc_a(a, h, sycl::access::mode::read);
-                mysycl::accessor acc_b(b, h, sycl::access::mode::read);
-                mysycl::accessor acc_c(c, h, sycl::access::mode::write);
+                sycl_usm::accessor acc_a(a, h, sycl::access::mode::read);
+                sycl_usm::accessor acc_b(b, h, sycl::access::mode::read);
+                sycl_usm::accessor acc_c(c, h, sycl::access::mode::write);
                 h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                     acc_c[idx] = acc_a[idx] + acc_b[idx];
                     });
@@ -71,9 +71,9 @@ namespace diamante_4 {
             d.prepareForDevice();
             e.prepareForDevice();
             sycl::event c_d_e = q.submit([&](sycl::handler& h) {
-                mysycl::accessor acc_c(c, h, sycl::access::mode::read);
-                mysycl::accessor acc_d(d, h, sycl::access::mode::read);
-                mysycl::accessor acc_e(e, h, sycl::access::mode::write);
+                sycl_usm::accessor acc_c(c, h, sycl::access::mode::read);
+                sycl_usm::accessor acc_d(d, h, sycl::access::mode::read);
+                sycl_usm::accessor acc_e(e, h, sycl::access::mode::write);
                 h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                     acc_e[idx] = acc_c[idx] + acc_d[idx];
                     });
@@ -88,9 +88,9 @@ namespace diamante_4 {
             f.prepareForDevice();
             g.prepareForDevice();
             sycl::event c_f_g = q.submit([&](sycl::handler& h) {
-                mysycl::accessor acc_c(c, h, sycl::access::mode::read);
-                mysycl::accessor acc_f(f, h, sycl::access::mode::read);
-                mysycl::accessor acc_g(g, h, sycl::access::mode::write);
+                sycl_usm::accessor acc_c(c, h, sycl::access::mode::read);
+                sycl_usm::accessor acc_f(f, h, sycl::access::mode::read);
+                sycl_usm::accessor acc_g(g, h, sycl::access::mode::write);
                 h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                     acc_g[idx] = acc_c[idx] + acc_f[idx];
                     });
@@ -105,9 +105,9 @@ namespace diamante_4 {
             g.prepareForDevice();
             h.prepareForDevice();
             sycl::event e_g_h = q.submit([&](sycl::handler& hdl) {
-                mysycl::accessor acc_e(e, hdl, sycl::access::mode::read);
-                mysycl::accessor acc_g(g, hdl, sycl::access::mode::read);
-                mysycl::accessor acc_h(h, hdl, sycl::access::mode::write);
+                sycl_usm::accessor acc_e(e, hdl, sycl::access::mode::read);
+                sycl_usm::accessor acc_g(g, hdl, sycl::access::mode::read);
+                sycl_usm::accessor acc_h(h, hdl, sycl::access::mode::write);
                 hdl.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                     acc_h[idx] = acc_e[idx] + acc_g[idx];
                     });
@@ -119,7 +119,7 @@ namespace diamante_4 {
             //std::cout << std::endl;
 
             {
-                mysycl::host_accessor host_acc_h(h, sycl::access::mode::read);
+                sycl_usm::host_accessor host_acc_h(h, sycl::access::mode::read);
                 long long count = 0;
                 for (size_t i = 0; i < N; ++i) {
                     count += host_acc_h[i];
