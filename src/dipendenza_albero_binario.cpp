@@ -1,7 +1,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 #include <chrono>
-#include "sycl_usm/sycl_usm.hpp"
+#include "buff_acc_lib/buff_acc_lib.hpp"
 #include <vector>
 
 namespace dipendenza_albero_binario {
@@ -34,7 +34,7 @@ namespace dipendenza_albero_binario {
 
         {
 
-            std::vector<sycl_usm::buffer<int>> buffers;
+            std::vector<buff_acc_lib::buffer<int>> buffers;
             buffers.reserve(num_kernels - 1);
             for (int i = 0; i < num_kernels - 1; i++) {
                 buffers.emplace_back(q, N);
@@ -43,7 +43,7 @@ namespace dipendenza_albero_binario {
             //kernel 0
             buffers[0].prepareForDevice();
             buffers[0].add_event(q.submit([&](sycl::handler& h) {
-                sycl_usm::accessor acc(buffers[0], h, sycl::access::mode::write);
+                buff_acc_lib::accessor acc(buffers[0], h, sycl::access::mode::write);
                 h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                     acc[idx] = 1;
                     });
@@ -56,8 +56,8 @@ namespace dipendenza_albero_binario {
                 buffers[padre_idx].prepareForDevice();
                 //std::cout << "figlio: " << i << " padre: " << padre_idx << std::endl;
                 auto e = q.submit([&](sycl::handler& h) {
-                    sycl_usm::accessor acc(buffers[i], h, sycl::access::mode::write);
-                    sycl_usm::accessor padre(buffers[padre_idx], h, sycl::access::mode::read);
+                    buff_acc_lib::accessor acc(buffers[i], h, sycl::access::mode::write);
+                    buff_acc_lib::accessor padre(buffers[padre_idx], h, sycl::access::mode::read);
                     h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                         acc[idx] = padre[idx];
                         });
@@ -70,7 +70,7 @@ namespace dipendenza_albero_binario {
             for (int i = 0; i < num_foglie; i++) {
                 int indice_foglia = num_foglie - 1 + i;
                 //std::cout << "indice_foglia: " << indice_foglia << "; ";
-                sycl_usm::host_accessor host_acc(buffers[indice_foglia], sycl::access::mode::read);
+                buff_acc_lib::host_accessor host_acc(buffers[indice_foglia], sycl::access::mode::read);
                 count += host_acc[0];
             }
             std::cout << "count: " << count << std::endl;

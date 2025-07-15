@@ -3,7 +3,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 
-namespace sycl_usm {
+namespace buff_acc_lib {
 
     template <typename T>
     class host_accessor {
@@ -14,7 +14,7 @@ namespace sycl_usm {
 
     public:
 
-        host_accessor(sycl_usm::buffer<T>& buf, sycl::access::mode mode = sycl::access::mode::read_write) :
+        host_accessor(buff_acc_lib::buffer<T>& buf, sycl::access::mode mode = sycl::access::mode::read_write) :
             host_data(buf.get_host_data()), mode(mode) {
                 /* data movement */
                 buf.get_queue()->wait();

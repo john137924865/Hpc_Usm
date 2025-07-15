@@ -1,7 +1,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 #include <chrono>
-#include "sycl_usm/sycl_usm.hpp"
+#include "buff_acc_lib/buff_acc_lib.hpp"
 #include <vector>
 
 namespace no_dipendenze {
@@ -29,7 +29,7 @@ namespace no_dipendenze {
 
         {
 
-            std::vector<sycl_usm::buffer<int>> buffers;
+            std::vector<buff_acc_lib::buffer<int>> buffers;
             buffers.reserve(num_kernels);
             for (int i = 0; i < num_kernels; i++) {
                 buffers.emplace_back(q, N);
@@ -38,7 +38,7 @@ namespace no_dipendenze {
             for (int i = 0; i < num_kernels; i++) {
                 buffers[i].prepareForDevice();
                 buffers[i].add_event(q.submit([&](sycl::handler& h) {
-                    sycl_usm::accessor acc(buffers[i], h, sycl::access::mode::write);
+                    buff_acc_lib::accessor acc(buffers[i], h, sycl::access::mode::write);
                     h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                         acc[idx] = idx;
                         });
@@ -46,7 +46,7 @@ namespace no_dipendenze {
             }
  
             for (int i = 0; i < num_kernels; i++) {
-                sycl_usm::host_accessor host_acc(buffers[i], sycl::access::mode::read);
+                buff_acc_lib::host_accessor host_acc(buffers[i], sycl::access::mode::read);
                 long long count = 0;
                 for (int j = 0; j < N; j++) {
                     count += host_acc[j];

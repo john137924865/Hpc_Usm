@@ -3,7 +3,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 
-namespace sycl_usm {
+namespace buff_acc_lib {
 
     template <typename T>
     class accessor {
@@ -14,13 +14,13 @@ namespace sycl_usm {
 
     public:
 
-        accessor(sycl_usm::buffer<T>& buf, sycl::handler& h, sycl::access::mode mode = sycl::access::mode::read_write) :
+        accessor(buff_acc_lib::buffer<T>& buf, sycl::handler& h, sycl::access::mode mode = sycl::access::mode::read_write) :
             device_data(buf.get_device_data()), mode(mode) {
                 /* dipendenze eventi */
                 buf.check_mode(mode, h);
 
                 /* data movement */
-                //se sta su host (ho già copiato in prepareForDevice())
+                //se sta su host (ho giï¿½ copiato in prepareForDevice())
                 if (buf.getLastData() == 1) {
                     //se solo lettura metto 2 both altrimenti 0 device
                     if (mode == sycl::access::mode::read) {

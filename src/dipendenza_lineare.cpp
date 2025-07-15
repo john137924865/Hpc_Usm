@@ -1,7 +1,7 @@
 #include <sycl/sycl.hpp>
 #include <iostream>
 #include <chrono>
-#include "sycl_usm/sycl_usm.hpp"
+#include "buff_acc_lib/buff_acc_lib.hpp"
 #include <vector>
 
 namespace dipendenza_lineare {
@@ -29,19 +29,19 @@ namespace dipendenza_lineare {
 
         {
 
-            sycl_usm::buffer<int> buffer(q, N);
+            buff_acc_lib::buffer<int> buffer(q, N);
 
             buffer.prepareForDevice();
             for (int i = 0; i < num_kernels; i++) {
                 buffer.add_event(q.submit([&](sycl::handler& h) {
-                    sycl_usm::accessor acc(buffer, h, sycl::access::mode::write);
+                    buff_acc_lib::accessor acc(buffer, h, sycl::access::mode::write);
                     h.parallel_for(sycl::range<1>(N), [=](sycl::id<1> idx) {
                         acc[idx] = i + 1;
                         });
                     }), "");
             }
 
-            sycl_usm::host_accessor host_acc(buffer, sycl::access::mode::read);
+            buff_acc_lib::host_accessor host_acc(buffer, sycl::access::mode::read);
             long long count = 0;
             for (int j = 0; j < N; j++) {
                 count += host_acc[j];

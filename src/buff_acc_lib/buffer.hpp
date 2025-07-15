@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 
-namespace sycl_usm {
+namespace buff_acc_lib {
 
     template <typename T>
     class buffer {
