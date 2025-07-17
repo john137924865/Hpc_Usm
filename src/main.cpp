@@ -9,7 +9,7 @@
 int main() {
     int size, num_kernels, choice;
 
-    std::cout << "Migliaia: ";
+    std::cout << "Size (thousands): ";
     std::cin >> size;
     size *= 1000;
     std::cout << size << std::endl << std::endl;
