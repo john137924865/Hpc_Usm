@@ -39,7 +39,7 @@ namespace buff_acc_lib {
             (*q).wait();
             //se sta su device copio su host
             if (this->getLastData() == 0) {
-                std::cout << "copio device to host - distr " << std::endl;
+                //std::cout << "copio device to host - distr " << std::endl;
                 this->copy_device_to_host();
             }
             /* libera memoria */
@@ -52,7 +52,7 @@ namespace buff_acc_lib {
         void prepareForDevice() {
             //se sta su host copio su device
             if (this->getLastData() == 1) {
-                std::cout << "copio host to device " << std::endl;
+                //std::cout << "copio host to device " << std::endl;
                 this->copy_host_to_device();
             }
         }

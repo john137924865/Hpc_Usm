@@ -20,7 +20,7 @@ namespace buff_acc_lib {
                 buf.get_queue()->wait();
                 //se sta su device copio su host
                 if (buf.getLastData() == 0) {
-                    std::cout << "copio device to host " << std::endl;
+                    //std::cout << "copio device to host " << std::endl;
                     buf.copy_device_to_host();
                     //se solo lettura metto 2 both altrimenti 1 host
                     if (mode == sycl::access::mode::read) {
