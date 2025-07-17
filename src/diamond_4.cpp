@@ -3,7 +3,7 @@
 #include <chrono>
 #include "buff_acc_lib/buff_acc_lib.hpp"
 
-namespace diamante_4 {
+namespace diamond_4 {
 
     void test1();
     void test2();
@@ -11,7 +11,7 @@ namespace diamante_4 {
 
     int N;
 
-    void diamante_4(int size) {
+    void diamond_4(int size) {
         N = size;
         test1();
         test2();
@@ -132,7 +132,7 @@ namespace diamante_4 {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test1 mySycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "buff_acc_lib: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -212,7 +212,7 @@ namespace diamante_4 {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test2 sycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "Sycl buffer-accessor: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -305,7 +305,7 @@ namespace diamante_4 {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test3 esplicito: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "USM device allocation: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 

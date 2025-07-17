@@ -4,7 +4,7 @@
 #include "buff_acc_lib/buff_acc_lib.hpp"
 #include <vector>
 
-namespace dipendenza_lineare {
+namespace linear_dependencies {
 
     void test1();
     void test2();
@@ -13,7 +13,7 @@ namespace dipendenza_lineare {
     int N;
     int num_kernels;
 
-    void dipendenza_lineare(int size, int nk) {
+    void linear_dependencies(int size, int nk) {
         N = size;
         num_kernels = nk;
         test1();
@@ -46,14 +46,14 @@ namespace dipendenza_lineare {
             for (int j = 0; j < N; j++) {
                 count += host_acc[j];
             }
-            std::cout << count / N << std::endl;
+            //std::cout << count / N << std::endl;
 
         }
 
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test1 mySycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "buff_acc_lib: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -81,14 +81,14 @@ namespace dipendenza_lineare {
             for (int j = 0; j < N; j++) {
                 count += host_acc[j];
             }
-            std::cout << count / N << std::endl;
+            //std::cout << count / N << std::endl;
 
         }
 
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test2 sycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "Sycl buffer-accessor: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -127,7 +127,7 @@ namespace dipendenza_lineare {
         for (int j = 0; j < N; j++) {
             count += array_host[j];
         }
-        std::cout << count / N << std::endl;
+        //std::cout << count / N << std::endl;
 
         sycl::free(array_dev, q);
         delete[] array_host;
@@ -135,7 +135,7 @@ namespace dipendenza_lineare {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test3 esplicito: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "USM device allocation: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 

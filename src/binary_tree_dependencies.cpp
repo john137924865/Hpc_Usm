@@ -4,7 +4,7 @@
 #include "buff_acc_lib/buff_acc_lib.hpp"
 #include <vector>
 
-namespace dipendenza_albero_binario {
+namespace binary_tree_dependencies {
 
     void test1();
     void test2();
@@ -13,14 +13,14 @@ namespace dipendenza_albero_binario {
     int N;
     int num_kernels;
     int livelli;
-    int num_foglie;
+    int num_leaves;
 
-    void dipendenza_albero_binario(int size, int nk) {
+    void binary_tree_dependencies(int size, int nk) {
         N = size;
         num_kernels = nk;
         livelli = __builtin_ctz(nk);
-        num_foglie = 1 << (livelli - 1);
-        std::cout << "Num_foglie: " << num_foglie << std::endl << std::endl;
+        num_leaves = 1 << (livelli - 1);
+        //std::cout << "Num_leaves: " << num_leaves << std::endl << std::endl;
         test1();
         test2();
         test3();
@@ -67,20 +67,20 @@ namespace dipendenza_albero_binario {
             }
 
             long long count = 0;
-            for (int i = 0; i < num_foglie; i++) {
-                int indice_foglia = num_foglie - 1 + i;
+            for (int i = 0; i < num_leaves; i++) {
+                int indice_foglia = num_leaves - 1 + i;
                 //std::cout << "indice_foglia: " << indice_foglia << "; ";
                 buff_acc_lib::host_accessor host_acc(buffers[indice_foglia], sycl::access::mode::read);
                 count += host_acc[0];
             }
-            std::cout << "count: " << count << std::endl;
+            //std::cout << "count: " << count << std::endl;
 
         }
 
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test1 mySycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "buff_acc_lib: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -120,20 +120,20 @@ namespace dipendenza_albero_binario {
             }
 
             long long count = 0;
-            for (int i = 0; i < num_foglie; i++) {
-                int indice_foglia = num_foglie - 1 + i;
+            for (int i = 0; i < num_leaves; i++) {
+                int indice_foglia = num_leaves - 1 + i;
                 //std::cout << "indice_foglia: " << indice_foglia << "; ";
                 sycl::host_accessor host_acc(buffers[indice_foglia], sycl::read_only);
                 count += host_acc[0];
             }
-            std::cout << "count: " << count << std::endl;
+            //std::cout << "count: " << count << std::endl;
 
         }
 
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test2 sycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "Sycl buffer-accessor: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -147,12 +147,12 @@ namespace dipendenza_albero_binario {
         std::vector<int*> arrays_host;
         std::vector<sycl::event> events;
         arrays_dev.reserve(num_kernels - 1);
-        arrays_host.reserve(num_foglie);
+        arrays_host.reserve(num_leaves);
         events.reserve(num_kernels - 1);
         for (int i = 0; i < num_kernels - 1; i++) {
             arrays_dev[i] = sycl::malloc_device<int>(N, q);
         }
-        for (int i = 0; i < num_foglie; i++) {
+        for (int i = 0; i < num_leaves; i++) {
             arrays_host[i] = new int[N];
         }
 
@@ -182,25 +182,25 @@ namespace dipendenza_albero_binario {
         q.wait();
 
         long long count = 0;
-        for (int i = 0; i < num_foglie; i++) {
-            int indice_foglia = num_foglie - 1 + i;
+        for (int i = 0; i < num_leaves; i++) {
+            int indice_foglia = num_leaves - 1 + i;
             //std::cout << "indice_foglia: " << indice_foglia << "; ";
             q.memcpy(arrays_host[i], arrays_dev[indice_foglia], N * sizeof(int)).wait();
             count += arrays_host[i][0];
         }
-        std::cout << "count: " << count << std::endl;
+        //std::cout << "count: " << count << std::endl;
 
         for (int i = 0; i < num_kernels - 1; i++) {
             sycl::free(arrays_dev[i], q);
         }
-        for (int i = 0; i < num_foglie; i++) {
+        for (int i = 0; i < num_leaves; i++) {
             delete[] arrays_host[i];
         }
 
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test3 esplicito: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "USM device allocation: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 

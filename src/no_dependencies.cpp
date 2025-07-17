@@ -4,7 +4,7 @@
 #include "buff_acc_lib/buff_acc_lib.hpp"
 #include <vector>
 
-namespace no_dipendenze {
+namespace no_dependencies {
 
     void test1();
     void test2();
@@ -13,7 +13,7 @@ namespace no_dipendenze {
     int N;
     int num_kernels;
 
-    void no_dipendenze(int size, int nk) {
+    void no_dependencies(int size, int nk) {
         N = size;
         num_kernels = nk;
         test1();
@@ -59,7 +59,7 @@ namespace no_dipendenze {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test1 mySycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "buff_acc_lib: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -100,7 +100,7 @@ namespace no_dipendenze {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test2 sycl: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "Sycl buffer-accessor: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
@@ -145,7 +145,7 @@ namespace no_dipendenze {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "test3 esplicito: Durata: " << duration.count() << " millisecondi" << std::endl << std::endl;
+        std::cout << "USM device allocation: " << duration.count() << " ms" << std::endl << std::endl;
 
     }
 
